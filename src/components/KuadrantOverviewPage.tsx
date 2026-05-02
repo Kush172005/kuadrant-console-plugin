@@ -258,6 +258,7 @@ const KuadrantOverviewPage: React.FC = () => {
     <>
       <Dropdown
         onSelect={onSelect}
+        popperProps={{ position: 'right' }}
         toggle={(toggleRef) => (
           <MenuToggle
             ref={toggleRef}
