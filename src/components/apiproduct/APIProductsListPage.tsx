@@ -590,7 +590,7 @@ const APIProductsListPage: React.FC = () => {
           </ListPageBody>
           <div className="kuadrant-resource-create-button pf-u-mt-md">
             {!canCreateLoading && canCreate && !isAllNamespaces ? (
-              <ListPageCreateLink to={`/kuadrant/ns/${activeNamespace}/apiproducts/~new`}>
+              <ListPageCreateLink to={`/kuadrant/apiproducts/ns/${activeNamespace}/~new`}>
                 {t('Create API Product')}
               </ListPageCreateLink>
             ) : (

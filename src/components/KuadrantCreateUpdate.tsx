@@ -43,9 +43,9 @@ const KuadrantCreateUpdate: React.FC<GenericPolicyForm> = ({
         });
         // APIProduct uses different URL pattern
         if (policyType === 'apiproduct') {
-          navigate(`/kuadrant/ns/${resource.metadata.namespace}/apiproducts`);
+          navigate(`/kuadrant/apiproducts/ns/${resource.metadata.namespace}`);
         } else {
-          navigate(`/kuadrant/all-namespaces/policies/${policyType}`);
+          navigate(`/kuadrant/policies/${policyType}`);
         }
       } else {
         await k8sCreate({
@@ -54,9 +54,9 @@ const KuadrantCreateUpdate: React.FC<GenericPolicyForm> = ({
         });
         // APIProduct uses different URL pattern
         if (policyType === 'apiproduct') {
-          navigate(`/kuadrant/ns/${resource.metadata.namespace}/apiproducts`);
+          navigate(`/kuadrant/apiproducts/ns/${resource.metadata.namespace}`);
         } else {
-          navigate(`/kuadrant/all-namespaces/policies/${policyType}`);
+          navigate(`/kuadrant/policies/${policyType}`);
         }
       }
     } catch (error: unknown) {

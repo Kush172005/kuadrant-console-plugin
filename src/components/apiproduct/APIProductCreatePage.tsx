@@ -34,17 +34,22 @@ const APIProductCreatePage: React.FC = () => {
 
   const handleNamespaceChange = (namespace: string) => {
     if (namespace !== '#ALL_NS#') {
-      navigate(`/kuadrant/ns/${namespace}/apiproducts/~new`, { replace: true });
+      if (isEditMode) {
+        // Editing a specific resource is namespace-bound; send the user to the list for the new namespace.
+        navigate(`/kuadrant/apiproducts/ns/${namespace}`, { replace: true });
+      } else {
+        navigate(`/kuadrant/apiproducts/ns/${namespace}/~new`, { replace: true });
+      }
     }
   };
 
   // Extract edit parameters from URL
-  // Route: /kuadrant/ns/:ns/apiproducts/:name/edit
-  // Split: ['', 'kuadrant', 'ns', 'namespace', 'apiproducts', 'name', 'edit']
-  // Index:   0    1          2      3            4              5       6
+  // Route: /kuadrant/apiproducts/ns/:ns/:name/edit
+  // Split: ['', 'kuadrant', 'apiproducts', 'ns', 'namespace', 'name', 'edit']
+  // Index:   0    1           2              3      4            5       6
   const pathSplit = location.pathname.split('/');
   const isEditMode = pathSplit[6] === 'edit';
-  const namespaceEdit = isEditMode ? pathSplit[3] : undefined;
+  const namespaceEdit = isEditMode ? pathSplit[4] : undefined;
   const nameEdit = isEditMode ? pathSplit[5] : undefined;
 
   // Get APIProduct GVK

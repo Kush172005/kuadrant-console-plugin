@@ -167,14 +167,14 @@ const KuadrantOverviewPage: React.FC = () => {
           if (!result.status?.allowed) {
             const targetNamespace =
               activeNamespace && activeNamespace !== '#ALL_NS#' ? activeNamespace : 'default';
-            navigate(`/kuadrant/ns/${targetNamespace}/overview`, { replace: true });
+            navigate(`/kuadrant/overview/ns/${targetNamespace}`, { replace: true });
           }
           // Otherwise, stay on /kuadrant/overview (cluster-wide view)
         } catch (error) {
           // On error, redirect to namespace-scoped view
           const targetNamespace =
             activeNamespace && activeNamespace !== '#ALL_NS#' ? activeNamespace : 'default';
-          navigate(`/kuadrant/ns/${targetNamespace}/overview`, { replace: true });
+          navigate(`/kuadrant/overview/ns/${targetNamespace}`, { replace: true });
         }
       }
     };
@@ -462,7 +462,7 @@ const KuadrantOverviewPage: React.FC = () => {
 
   const handleNamespaceChange = (newNamespace: string) => {
     if (newNamespace !== '#ALL_NS#') {
-      navigate(`/kuadrant/ns/${newNamespace}/overview`, { replace: true });
+      navigate(`/kuadrant/overview/ns/${newNamespace}`, { replace: true });
     } else {
       navigate('/kuadrant/overview', { replace: true });
     }
