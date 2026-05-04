@@ -10,7 +10,7 @@ The design introduces three personas (API Consumer, API Owner, API Admin) with d
 
 - **API Consumer**: Namespace-scoped APIKey management + cluster-wide catalog browsing
 - **API Owner**: Namespace-scoped API management (APIProducts, APIKeyApprovals, APIKeyRequests) + cluster-wide catalog browsing (APIProducts, policies, routes)
-- **API Admin**: API Owner with cluster-wide permissions (ClusterRoleBinding) + additional troubleshooting capabilities (APIKeys/APIKeyRequests write access)
+- **API Admin**: API Owner with cluster-wide permissions (ClusterRoleBinding) + additional troubleshooting capabilities
 
 ## Goals
 
@@ -46,6 +46,7 @@ The design introduces three personas (API Consumer, API Owner, API Admin) with d
 - New focus on API Management resources: `APIProduct`, `APIKey`, `APIKeyApproval`
 
 **RBAC binding strategy:**
+
 - `api-catalog-browser`: Bound via ClusterRoleBinding for cluster-wide read access to catalog
 - `api-consumer`: Bound via RoleBinding for namespace-scoped APIKey/Secret management
 - `api-owner`: Bound via RoleBinding for namespace-scoped API management
@@ -734,6 +735,7 @@ In addition to APIProduct and APIKey, API consumers need read-only access to pol
 **Notes**:
 
 **Binding Strategy:**
+
 - ¹ **api-catalog-browser ClusterRole**: Each persona (consumer/owner/admin) requires this role bound via **ClusterRoleBinding** for cluster-wide catalog discovery
   - Consumers get: `api-catalog-browser` (ClusterRoleBinding) + `api-consumer` (RoleBinding per namespace)
   - Owners get: `api-catalog-browser` (ClusterRoleBinding) + `api-owner` (RoleBinding per namespace)
@@ -741,6 +743,7 @@ In addition to APIProduct and APIKey, API consumers need read-only access to pol
 - ² **Write access**: Policies/Routes may have write access via separate non-API-Management roles if needed
 
 **Consumer Permissions:**
+
 - **Consumer (own NS)**: Permissions in namespaces where consumer has RoleBinding for api-consumer ClusterRole
 - **Consumer (other NS)**: Permissions in namespaces where consumer does NOT have RoleBinding
 - **RBAC-enforced isolation**: Consumers cannot access APIKeys or Secrets in other consumer namespaces (architectural principle)
@@ -748,12 +751,14 @@ In addition to APIProduct and APIKey, API consumers need read-only access to pol
 - **Secret access**: Namespace-scoped via RoleBinding. Consumer creates secret with API key, references via `spec.secretRef`. Controller creates enforcement secret in kuadrant namespace on approval.
 
 **Owner Permissions:**
+
 - **APIKeyRequest discovery**: Owners discover requests via APIKeyRequest resources in **their own namespace** (namespace-scoped, RBAC-enforced)
 - **APIKeyRequest lifecycle**: Controller-managed shadow resource - owners/consumers do NOT create/update/delete these directly
 - **Security isolation**: Owners do NOT have access to APIKey resources or consumer Secrets. APIKeyRequest does not contain API key values.
 - **APIKeyApproval**: Created in owner's namespace with cross-namespace reference to consumer's APIKey
 
 **Admin Permissions:**
+
 - **Scope**: Same core permissions as api-owner, but bound cluster-wide (ClusterRoleBinding instead of RoleBinding)
 - **Additional capability**: Write access to APIKeys for troubleshooting (cluster-wide)
 - **Security**: Admins do NOT have secret read permissions in consumer namespaces (consumer secrets remain isolated)
@@ -1101,6 +1106,7 @@ RBAC testing focuses on verifying that Kubernetes enforces the defined permissio
 Use `kubectl --as=<user>` to test permissions without creating real users.
 
 **Setup assumptions:**
+
 - `test-api-consumer-a` has: ClusterRoleBinding for `api-catalog-browser` + RoleBinding for `api-consumer` in `api-consumer-a` namespace
 - `test-api-owner-team-a` has: ClusterRoleBinding for `api-catalog-browser` + RoleBinding for `api-owner` in `api-team-a` namespace
 - `test-api-admin` has: ClusterRoleBinding for `api-catalog-browser` + ClusterRoleBinding for `api-admin`
@@ -1159,6 +1165,7 @@ See the "Validation Checklist" section below for detailed test scenarios.
 #### Consumer Testing
 
 **Setup required:**
+
 - ClusterRoleBinding for `api-catalog-browser`
 - RoleBinding for `api-consumer` in consumer's namespace
 
@@ -1186,6 +1193,7 @@ See the "Validation Checklist" section below for detailed test scenarios.
 #### Owner Testing
 
 **Setup required:**
+
 - ClusterRoleBinding for `api-catalog-browser`
 - RoleBinding for `api-owner` in owner's namespace
 
@@ -1218,6 +1226,7 @@ See the "Validation Checklist" section below for detailed test scenarios.
 #### Admin Testing
 
 **Setup required:**
+
 - ClusterRoleBinding for `api-catalog-browser`
 - ClusterRoleBinding for `api-admin`
 
@@ -1359,6 +1368,7 @@ This test verifies that approval state is decoupled from the current approval mo
 Test users for kubectl impersonation testing. Each persona requires TWO bindings:
 
 **Consumer Personas:**
+
 - `test-api-consumer-a` - Consumer with:
   - ClusterRoleBinding for `api-catalog-browser` (catalog discovery)
   - RoleBinding for `api-consumer` in `api-consumer-a` namespace (APIKey/Secret management)
@@ -1367,6 +1377,7 @@ Test users for kubectl impersonation testing. Each persona requires TWO bindings
   - RoleBinding for `api-consumer` in `api-consumer-b` namespace (APIKey/Secret management)
 
 **Owner Personas:**
+
 - `test-api-owner-team-a` - Owner with:
   - ClusterRoleBinding for `api-catalog-browser` (catalog discovery)
   - RoleBinding for `api-owner` in `api-team-a` namespace (API management)
@@ -1375,6 +1386,7 @@ Test users for kubectl impersonation testing. Each persona requires TWO bindings
   - RoleBinding for `api-owner` in `api-team-b` namespace (API management)
 
 **Admin Persona:**
+
 - `test-api-admin` - Admin with:
   - ClusterRoleBinding for `api-catalog-browser` (catalog discovery)
   - ClusterRoleBinding for `api-admin` (cluster-wide API management)
