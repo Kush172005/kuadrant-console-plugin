@@ -863,7 +863,7 @@ rules:
   # Consumers do NOT update status - controller manages all status fields
   - apiGroups: ["devportal.kuadrant.io"]
     resources: ["apikeys"]
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   # Read secrets in consumer's own namespace to access API keys (namespace-scoped via RoleBinding)
   # Consumer creates secret with API key before creating APIKey (spec.secretRef references this secret)
@@ -1001,7 +1001,7 @@ rules:
   # NOTE: Admins still do NOT have secret read permissions in consumer namespaces (consumer secrets remain isolated)
   - apiGroups: ["devportal.kuadrant.io"]
     resources: ["apikeys"]
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   # NOTE: Catalog browsing (planpolicies, authpolicies, ratelimitpolicies, httproutes, gateways)
   # comes from api-catalog-browser ClusterRole
