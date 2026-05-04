@@ -74,10 +74,10 @@ const KuadrantDNSPolicyCreatePage: React.FC = () => {
       healthCheck.endpoint ||
       healthCheck.failureThreshold ||
       healthCheck.port ||
-      healthCheck.protocol != '';
+      healthCheck.protocol !== '';
 
     const hasLoadBalancing =
-      loadBalancing.geo || loadBalancing.defaultGeo != '' || loadBalancing.weight;
+      loadBalancing.geo || loadBalancing.defaultGeo !== '' || loadBalancing.weight;
 
     return {
       apiVersion:

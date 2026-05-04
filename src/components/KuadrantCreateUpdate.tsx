@@ -72,7 +72,7 @@ const KuadrantCreateUpdate: React.FC<GenericPolicyForm> = ({
   };
   return (
     <>
-      {errorAlertMsg != '' && (
+      {errorAlertMsg !== '' && (
         <AlertGroup className="kuadrant-alert-group">
           <Alert
             title={
