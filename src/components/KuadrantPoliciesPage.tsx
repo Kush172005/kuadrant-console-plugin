@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate, useLocation } from 'react-router-dom-v5-compat';
 import { useTranslation } from 'react-i18next';
 import { sortable } from '@patternfly/react-table';
 import {
@@ -8,7 +8,6 @@ import {
   HorizontalNav,
   TableColumn,
   K8sResourceCommon,
-  useActiveNamespace,
   useActivePerspective,
   ListPageCreateLink,
   ListPageBody,
@@ -27,6 +26,7 @@ import './kuadrant.css';
 import { RESOURCES, getPolicyKinds, resourceGVKMapping } from '../utils/resources';
 import NoPermissionsView from './NoPermissionsView';
 import { getResourceNameFromKind } from '../utils/getModelFromResource';
+import { useKuadrantNamespaceChange } from '../hooks/useKuadrantNamespaceChange';
 
 interface Resource {
   name: string;
@@ -341,16 +341,32 @@ const TLSPolicyTab: React.FC = () => {
 
 const KuadrantPoliciesPage: React.FC = () => {
   const { t } = useTranslation('plugin__kuadrant-console-plugin');
-  const { ns } = useParams<{ ns: string }>();
-  const [activeNamespace, setActiveNamespace] = useActiveNamespace();
-  const [activePerspective] = useActivePerspective();
-  const navigate = useNavigate();
+  const location = useLocation();
 
-  React.useEffect(() => {
-    if (ns && ns !== activeNamespace) {
-      setActiveNamespace(ns);
+  // Extract current tab from URL to preserve it when changing namespaces
+  const getCurrentTab = React.useCallback(() => {
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const policiesIndex = pathParts.indexOf('policies');
+
+    if (policiesIndex !== -1 && pathParts.length > policiesIndex + 1) {
+      const nextSegment = pathParts[policiesIndex + 1];
+      // If next segment is not 'ns', it's a tab
+      if (nextSegment !== 'ns') {
+        return `/${nextSegment}`;
+      } else if (pathParts.length > policiesIndex + 3) {
+        // It's /kuadrant/policies/ns/namespace/tab pattern
+        return `/${pathParts[policiesIndex + 3]}`;
+      }
     }
-  }, [ns, activeNamespace, setActiveNamespace]);
+
+    return '';
+  }, [location.pathname]);
+
+  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange(
+    '/policies',
+    getCurrentTab,
+  );
+  const [activePerspective] = useActivePerspective();
 
   const defaultColumns: TableColumn<K8sResourceCommon>[] = [
     {
@@ -461,22 +477,6 @@ const KuadrantPoliciesPage: React.FC = () => {
       component: PlanPolicyTab,
     },
   ];
-
-  const handleNamespaceChange = (activeNamespace: string) => {
-    let currentTab = '';
-    let activeTab = location.pathname.split('/').pop();
-    if (activeTab === 'policies') {
-      activeTab = '';
-    }
-
-    if (activeNamespace !== '#ALL_NS#') {
-      currentTab = `/kuadrant/policies/ns/${activeNamespace}/${activeTab}`;
-    } else {
-      currentTab = `/kuadrant/policies/${activeTab}`;
-    }
-
-    navigate(currentTab, { replace: true });
-  };
 
   const contextValue = {
     activeNamespace,

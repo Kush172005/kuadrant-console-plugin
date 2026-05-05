@@ -9,22 +9,25 @@ import { useActiveNamespace } from '@openshift-console/dynamic-plugin-sdk';
  * - Syncing URL namespace parameter with console's active namespace
  * - Handling namespace changes from the NamespaceBar
  * - Navigating between base and namespace-scoped routes
+ * - Optionally preserving sub-paths (like tabs) when changing namespaces
  *
  * @param basePath - The base path for the page (e.g., '/apiproducts', '/policies')
+ * @param getCurrentSubPath - Optional callback to extract current sub-path (e.g., active tab)
  * @returns An object with handleNamespaceChange function and activeNamespace
  *
  * @example
  * ```tsx
+ * // Simple usage without tab preservation
  * const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/apiproducts');
- * return (
- *   <>
- *     <NamespaceBar onNamespaceChange={handleNamespaceChange} />
- *     <PageSection>...</PageSection>
- *   </>
- * );
+ *
+ * // With tab preservation
+ * const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/policies', () => {
+ *   // Extract current tab from URL
+ *   return currentTab ? `/${currentTab}` : '';
+ * });
  * ```
  */
-export const useKuadrantNamespaceChange = (basePath: string) => {
+export const useKuadrantNamespaceChange = (basePath: string, getCurrentSubPath?: () => string) => {
   const { ns } = useParams<{ ns: string }>();
   const [activeNamespace, setActiveNamespace] = useActiveNamespace();
   const navigate = useNavigate();
@@ -42,17 +45,20 @@ export const useKuadrantNamespaceChange = (basePath: string) => {
   /**
    * Handle namespace changes from the NamespaceBar
    * Navigates to the appropriate route based on selected namespace
-   * Pattern: /kuadrant{basePath} or /kuadrant{basePath}/ns/:ns
+   * Pattern: /kuadrant{basePath}[/ns/:ns][/subPath]
+   * Example: /kuadrant/policies/ns/test-1/auth
    */
   const handleNamespaceChange = React.useCallback(
     (newNamespace: string) => {
+      const subPath = getCurrentSubPath ? getCurrentSubPath() : '';
+
       if (newNamespace !== allNamespacesSubPath) {
-        navigate(`/kuadrant${basePath}/ns/${newNamespace}`, { replace: true });
+        navigate(`/kuadrant${basePath}/ns/${newNamespace}${subPath}`, { replace: true });
       } else {
-        navigate(`/kuadrant${basePath}`, { replace: true });
+        navigate(`/kuadrant${basePath}${subPath}`, { replace: true });
       }
     },
-    [navigate, basePath, allNamespacesSubPath],
+    [navigate, basePath, allNamespacesSubPath, getCurrentSubPath],
   );
 
   return {
