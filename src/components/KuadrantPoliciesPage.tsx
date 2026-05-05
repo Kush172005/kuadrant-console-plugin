@@ -470,9 +470,9 @@ const KuadrantPoliciesPage: React.FC = () => {
     }
 
     if (activeNamespace !== '#ALL_NS#') {
-      currentTab = `/kuadrant/ns/${activeNamespace}/policies/${activeTab}`;
+      currentTab = `/kuadrant/policies/ns/${activeNamespace}/${activeTab}`;
     } else {
-      currentTab = `/kuadrant/all-namespaces/policies/${activeTab}`;
+      currentTab = `/kuadrant/policies/${activeTab}`;
     }
 
     navigate(currentTab, { replace: true });
