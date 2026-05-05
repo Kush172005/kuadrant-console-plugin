@@ -1051,10 +1051,6 @@ Use `SelfSubjectAccessReview` to check permissions before rendering actions: Con
 
 Create `config/rbac/api-management/` directory with ClusterRole manifests: `api-catalog-browser.yaml`, `api-consumer.yaml`, `api-owner.yaml`, `api-admin.yaml` (copy from RBAC Manifests section in this design). Add to operator deployment kustomization, Helm chart, and OLM bundle. Implement auto-deployment on installation and upgrade logic to update ClusterRoles when operator is updated. Ensure ClusterRoles are created before console plugin installation.
 
-**Task 9: Add namespace onboarding templates and RBAC validation**
-
-Create `NamespaceTemplate` CRD (or use existing solution) with templates for deployment patterns: consumer namespace (ClusterRoleBinding for api-catalog-browser + RoleBinding for api-consumer), owner namespace (ClusterRoleBinding for api-catalog-browser + RoleBinding for api-owner), shared consumer namespace (Pattern 1). Add operator validation logic to check if required ClusterRoles exist, set status condition if missing, add reconciliation to recreate if deleted. Document template usage, troubleshooting, ClusterRole deployment, and dual RoleBinding creation (ClusterRoleBinding for catalog + RoleBinding for namespace-scoped permissions) with examples for Patterns 1-4. Add RBAC section to operator README linking to this design document.
-
 ### Future Work (Out of Scope)
 
 The following items are identified but not required for initial RBAC implementation:
@@ -1120,7 +1116,7 @@ kubectl auth can-i create apiproducts --as=test-api-owner-team-a -n api-team-a  
 kubectl auth can-i create apiproducts --as=test-api-owner-team-a -n api-team-b  # Should fail (namespace-scoped)
 kubectl auth can-i create apikeyapprovals --as=test-api-owner-team-a -n api-team-a  # Should succeed (via api-owner)
 
-# Test admin permissions (assuming admin has both bindings)
+# Test admin permissions
 kubectl auth can-i list apiproducts --as=test-api-admin --all-namespaces  # Should succeed (via api-catalog-browser)
 kubectl auth can-i list planpolicies --as=test-api-admin --all-namespaces  # Should succeed (via api-catalog-browser, read-only)
 kubectl auth can-i delete apiproducts --as=test-api-admin -n api-team-a  # Should succeed (via api-admin)
