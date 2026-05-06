@@ -216,6 +216,7 @@
   "Select an Issuer": "Select an Issuer",
   "Select ClusterIssuer": "Select ClusterIssuer",
   "Select Gateway": "Select Gateway",
+  "Select HTTPRoute...": "Select HTTPRoute...",
   "Select Issuer": "Select Issuer",
   "Select lifecycle status": "Select lifecycle status",
   "Select tags": "Select tags",

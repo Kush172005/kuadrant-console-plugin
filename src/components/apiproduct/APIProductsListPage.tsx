@@ -8,7 +8,6 @@ import {
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
-  ToolbarItem,
   ToolbarFilter,
   Select,
   SelectOption,
@@ -77,11 +76,16 @@ const APIProductsListPage: React.FC = () => {
   });
 
   // Filter state
-  const [filters, setFilters] = React.useState<string>('');
-  const [filterSelected, setFilterSelected] = React.useState<'name' | 'namespace'>('name');
+  const [nameFilter, setNameFilter] = React.useState<string>('');
+  const [namespaceFilter, setNamespaceFilter] = React.useState<string>('');
+  const [filterSelected, setFilterSelected] = React.useState<'name' | 'namespace' | 'httproute'>(
+    'name',
+  );
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const [isFilterValueOpen, setIsFilterValueOpen] = React.useState(false);
   const [selectedStatuses, setSelectedStatuses] = React.useState<string[]>([]);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = React.useState(false);
+  const [selectedHTTPRoutes, setSelectedHTTPRoutes] = React.useState<string[]>([]);
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const [perPage, setPerPage] = React.useState<number>(10);
 
@@ -89,6 +93,11 @@ const APIProductsListPage: React.FC = () => {
   const statusToggleRef = React.useRef<HTMLButtonElement>(null);
   const statusMenuRef = React.useRef<HTMLDivElement>(null);
   const statusContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // HTTPRoute filter menu refs
+  const routeToggleRef = React.useRef<HTMLButtonElement>(null);
+  const routeMenuRef = React.useRef<HTMLDivElement>(null);
+  const routeContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Skip RBAC check when viewing all namespaces
   const [canCreate, canCreateLoading] = useAccessReview(
@@ -145,6 +154,23 @@ const APIProductsListPage: React.FC = () => {
     [selectedStatuses],
   );
 
+  // Extract unique HTTPRoute identifiers from apiProducts
+  const httpRouteOptions = React.useMemo(() => {
+    if (!apiProducts) return [];
+    const routes = new Set<string>();
+
+    apiProducts.forEach((product) => {
+      const targetRef = product.spec?.targetRef;
+      if (targetRef && targetRef.kind === 'HTTPRoute' && targetRef.name) {
+        const targetNamespace = targetRef.namespace || product.metadata?.namespace;
+        const routeKey = `${targetNamespace}/${targetRef.name}`;
+        routes.add(routeKey);
+      }
+    });
+
+    return Array.from(routes).sort();
+  }, [apiProducts]);
+
   // Apply filters to APIProducts
   const filteredProducts = React.useMemo(() => {
     if (!apiProducts) return [];
@@ -158,31 +184,45 @@ const APIProductsListPage: React.FC = () => {
         }
       }
 
-      // Name/Namespace filter
-      if (filters) {
-        const filterValue = filters.toLowerCase();
-        if (filterSelected === 'name') {
-          const name = product.metadata?.name || '';
-          if (!name.toLowerCase().includes(filterValue)) {
-            return false;
-          }
-        } else if (filterSelected === 'namespace') {
-          const namespace = product.metadata?.namespace || '';
-          if (!namespace.toLowerCase().includes(filterValue)) {
-            return false;
-          }
+      // HTTPRoute filter
+      if (selectedHTTPRoutes.length > 0) {
+        const targetRef = product.spec?.targetRef;
+        if (!targetRef || targetRef.kind !== 'HTTPRoute') {
+          return false;
+        }
+        const targetNamespace = targetRef.namespace || product.metadata?.namespace;
+        const routeKey = `${targetNamespace}/${targetRef.name}`;
+        if (!selectedHTTPRoutes.includes(routeKey)) {
+          return false;
+        }
+      }
+
+      // Name filter
+      if (nameFilter) {
+        const name = product.metadata?.name || '';
+        if (!name.toLowerCase().includes(nameFilter.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Namespace filter
+      if (namespaceFilter) {
+        const namespace = product.metadata?.namespace || '';
+        if (!namespace.toLowerCase().includes(namespaceFilter.toLowerCase())) {
+          return false;
         }
       }
 
       return true;
     });
-  }, [apiProducts, selectedStatuses, filters, filterSelected, t]);
+  }, [apiProducts, selectedStatuses, selectedHTTPRoutes, nameFilter, namespaceFilter, t]);
 
   // Filter labels
   const filterLabels = React.useMemo(
     () => ({
       name: t('Name'),
       namespace: t('Namespace'),
+      httproute: t('HTTPRoute'),
     }),
     [t],
   );
@@ -220,13 +260,70 @@ const APIProductsListPage: React.FC = () => {
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     selection: string | number,
   ) => {
-    setFilterSelected(selection as 'name' | 'namespace');
+    setFilterSelected(selection as 'name' | 'namespace' | 'httproute');
     setIsFilterOpen(false);
+  };
+
+  // HTTPRoute filter menu handlers
+  const handleRouteMenuKeys = (event: KeyboardEvent) => {
+    if (isFilterValueOpen && routeMenuRef.current?.contains(event.target as Node)) {
+      if (event.key === 'Escape' || event.key === 'Tab') {
+        setIsFilterValueOpen(false);
+        routeToggleRef.current?.focus();
+      }
+    }
+  };
+
+  const handleRouteClickOutside = (event: MouseEvent) => {
+    if (isFilterValueOpen && !routeMenuRef.current?.contains(event.target as Node)) {
+      setIsFilterValueOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (filterSelected === 'httproute') {
+      window.addEventListener('keydown', handleRouteMenuKeys);
+      window.addEventListener('click', handleRouteClickOutside);
+      return () => {
+        window.removeEventListener('keydown', handleRouteMenuKeys);
+        window.removeEventListener('click', handleRouteClickOutside);
+      };
+    }
+  }, [isFilterValueOpen, filterSelected]);
+
+  const onRouteToggleClick = (ev: React.MouseEvent) => {
+    ev.stopPropagation();
+    setTimeout(() => {
+      if (routeMenuRef.current) {
+        const firstElement = routeMenuRef.current.querySelector('li > button:not(:disabled)');
+        firstElement && (firstElement as HTMLElement).focus();
+      }
+    }, 0);
+    setIsFilterValueOpen(!isFilterValueOpen);
+  };
+
+  const onRouteSelect = (
+    event: React.MouseEvent | undefined,
+    itemId: string | number | undefined,
+  ) => {
+    if (typeof itemId === 'undefined') {
+      return;
+    }
+
+    const itemStr = itemId.toString();
+    setSelectedHTTPRoutes((prev) =>
+      prev.includes(itemStr) ? prev.filter((r) => r !== itemStr) : [...prev, itemStr],
+    );
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (value: string) => {
     setCurrentPage(1);
-    setFilters(value);
+    if (filterSelected === 'name') {
+      setNameFilter(value);
+    } else if (filterSelected === 'namespace') {
+      setNamespaceFilter(value);
+    }
   };
 
   // Status filter menu handlers
@@ -578,16 +675,58 @@ const APIProductsListPage: React.FC = () => {
                       />
                     </div>
                   </ToolbarFilter>
-                  <ToolbarItem>
+                  <ToolbarFilter
+                    labels={nameFilter ? [nameFilter] : []}
+                    deleteLabel={() => {
+                      setNameFilter('');
+                      setCurrentPage(1);
+                    }}
+                    deleteLabelGroup={() => {
+                      setNameFilter('');
+                      setCurrentPage(1);
+                    }}
+                    categoryName={t('Name')}
+                  >
+                    <></>
+                  </ToolbarFilter>
+                  <ToolbarFilter
+                    labels={namespaceFilter ? [namespaceFilter] : []}
+                    deleteLabel={() => {
+                      setNamespaceFilter('');
+                      setCurrentPage(1);
+                    }}
+                    deleteLabelGroup={() => {
+                      setNamespaceFilter('');
+                      setCurrentPage(1);
+                    }}
+                    categoryName={t('Namespace')}
+                  >
+                    <></>
+                  </ToolbarFilter>
+                  <ToolbarFilter
+                    labels={selectedHTTPRoutes}
+                    deleteLabel={(_category, label) => {
+                      setSelectedHTTPRoutes((prev) => prev.filter((r) => r !== label));
+                      setCurrentPage(1);
+                    }}
+                    deleteLabelGroup={() => {
+                      setSelectedHTTPRoutes([]);
+                      setCurrentPage(1);
+                    }}
+                    categoryName={t('HTTPRoute')}
+                  >
+                    <></>
+                  </ToolbarFilter>
+                  <InputGroup>
                     <Select
                       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                         <MenuToggle
                           ref={toggleRef}
                           onClick={onToggleClick}
                           isExpanded={isFilterOpen}
+                          style={{ minWidth: '150px' }}
                         >
-                          {filterSelected === 'name' && t('Name')}
-                          {filterSelected === 'namespace' && t('Namespace')}
+                          {filterLabels[filterSelected]}
                         </MenuToggle>
                       )}
                       onSelect={onFilterSelect}
@@ -597,22 +736,64 @@ const APIProductsListPage: React.FC = () => {
                       <SelectList>
                         <SelectOption value="name">{t('Name')}</SelectOption>
                         <SelectOption value="namespace">{t('Namespace')}</SelectOption>
+                        <SelectOption value="httproute">{t('HTTPRoute')}</SelectOption>
                       </SelectList>
                     </Select>
-                  </ToolbarItem>
-                  <ToolbarItem>
-                    <InputGroup>
+                    {filterSelected === 'httproute' ? (
+                      <div ref={routeContainerRef}>
+                        <Popper
+                          trigger={
+                            <MenuToggle
+                              ref={routeToggleRef}
+                              onClick={onRouteToggleClick}
+                              isExpanded={isFilterValueOpen}
+                              {...(selectedHTTPRoutes.length > 0 && {
+                                badge: <Badge isRead>{selectedHTTPRoutes.length}</Badge>,
+                              })}
+                            >
+                              {t('Select HTTPRoute...')}
+                            </MenuToggle>
+                          }
+                          triggerRef={routeToggleRef}
+                          popper={
+                            <Menu
+                              ref={routeMenuRef}
+                              onSelect={onRouteSelect}
+                              selected={selectedHTTPRoutes}
+                            >
+                              <MenuContent>
+                                <MenuList>
+                                  {httpRouteOptions.map((route) => (
+                                    <MenuItem
+                                      key={route}
+                                      hasCheckbox
+                                      isSelected={selectedHTTPRoutes.includes(route)}
+                                      itemId={route}
+                                    >
+                                      {route}
+                                    </MenuItem>
+                                  ))}
+                                </MenuList>
+                              </MenuContent>
+                            </Menu>
+                          }
+                          popperRef={routeMenuRef}
+                          appendTo={routeContainerRef.current || undefined}
+                          isVisible={isFilterValueOpen}
+                        />
+                      </div>
+                    ) : (
                       <TextInput
                         type="text"
                         placeholder={t('Search by {{filterValue}}...', {
                           filterValue: filterLabels[filterSelected],
                         })}
-                        value={filters}
+                        value={filterSelected === 'name' ? nameFilter : namespaceFilter}
                         onChange={(_event, value) => handleFilterChange(value)}
                         aria-label={t('Resource search')}
                       />
-                    </InputGroup>
-                  </ToolbarItem>
+                    )}
+                  </InputGroup>
                 </ToolbarGroup>
               </ToolbarContent>
             </Toolbar>
@@ -627,7 +808,10 @@ const APIProductsListPage: React.FC = () => {
                 icon={SearchIcon}
               >
                 <EmptyStateBody>
-                  {selectedStatuses.length > 0 || filters
+                  {selectedStatuses.length > 0 ||
+                  selectedHTTPRoutes.length > 0 ||
+                  nameFilter ||
+                  namespaceFilter
                     ? t('No API Products match the filter criteria.')
                     : t('There are no API Products to display - please create some.')}
                 </EmptyStateBody>
