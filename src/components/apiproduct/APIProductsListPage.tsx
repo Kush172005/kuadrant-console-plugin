@@ -9,11 +9,17 @@ import {
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
+  ToolbarFilter,
   Select,
   SelectOption,
   SelectList,
+  Menu,
+  MenuContent,
+  MenuList,
+  MenuItem,
   MenuToggle,
   MenuToggleElement,
+  Popper,
   InputGroup,
   TextInput,
   Pagination,
@@ -23,7 +29,9 @@ import {
   AlertGroup,
   Tooltip,
   Button,
+  Badge,
 } from '@patternfly/react-core';
+import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { sortable } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons';
 import {
@@ -72,10 +80,15 @@ const APIProductsListPage: React.FC = () => {
   const [filters, setFilters] = React.useState<string>('');
   const [filterSelected, setFilterSelected] = React.useState<'name' | 'namespace'>('name');
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
-  const [statusFilter, setStatusFilter] = React.useState<string>('');
+  const [selectedStatuses, setSelectedStatuses] = React.useState<string[]>([]);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const [perPage, setPerPage] = React.useState<number>(10);
+
+  // Status filter menu refs
+  const statusToggleRef = React.useRef<HTMLButtonElement>(null);
+  const statusMenuRef = React.useRef<HTMLDivElement>(null);
+  const statusContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Skip RBAC check when viewing all namespaces
   const [canCreate, canCreateLoading] = useAccessReview(
@@ -126,15 +139,21 @@ const APIProductsListPage: React.FC = () => {
     return Array.from(statuses).sort();
   }, [apiProducts, t]);
 
+  // Deduplicate selected statuses to prevent key drift in ToolbarFilter
+  const uniqueSelectedStatuses = React.useMemo(
+    () => [...new Set(selectedStatuses)],
+    [selectedStatuses],
+  );
+
   // Apply filters to APIProducts
   const filteredProducts = React.useMemo(() => {
     if (!apiProducts) return [];
 
     return apiProducts.filter((product) => {
       // Status filter
-      if (statusFilter) {
+      if (selectedStatuses.length > 0) {
         const productStatus = product.spec?.publishStatus || t('Draft');
-        if (productStatus !== statusFilter) {
+        if (!selectedStatuses.includes(productStatus)) {
           return false;
         }
       }
@@ -157,7 +176,7 @@ const APIProductsListPage: React.FC = () => {
 
       return true;
     });
-  }, [apiProducts, statusFilter, filters, filterSelected, t]);
+  }, [apiProducts, selectedStatuses, filters, filterSelected, t]);
 
   // Filter labels
   const filterLabels = React.useMemo(
@@ -210,14 +229,54 @@ const APIProductsListPage: React.FC = () => {
     setFilters(value);
   };
 
-  const handleStatusFilterSelect = (_event: React.MouseEvent | undefined, value: string) => {
-    setStatusFilter(value === statusFilter ? '' : value);
-    setIsStatusFilterOpen(false);
-    setCurrentPage(1);
+  // Status filter menu handlers
+  const handleStatusMenuKeys = (event: KeyboardEvent) => {
+    if (isStatusFilterOpen && statusMenuRef.current?.contains(event.target as Node)) {
+      if (event.key === 'Escape' || event.key === 'Tab') {
+        setIsStatusFilterOpen(false);
+        statusToggleRef.current?.focus();
+      }
+    }
   };
 
-  const clearStatusFilter = () => {
-    setStatusFilter('');
+  const handleStatusClickOutside = (event: MouseEvent) => {
+    if (isStatusFilterOpen && !statusMenuRef.current?.contains(event.target as Node)) {
+      setIsStatusFilterOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    window.addEventListener('keydown', handleStatusMenuKeys);
+    window.addEventListener('click', handleStatusClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleStatusMenuKeys);
+      window.removeEventListener('click', handleStatusClickOutside);
+    };
+  }, [isStatusFilterOpen]);
+
+  const onStatusToggleClick = (ev: React.MouseEvent) => {
+    ev.stopPropagation();
+    setTimeout(() => {
+      if (statusMenuRef.current) {
+        const firstElement = statusMenuRef.current.querySelector('li > button:not(:disabled)');
+        firstElement && (firstElement as HTMLElement).focus();
+      }
+    }, 0);
+    setIsStatusFilterOpen(!isStatusFilterOpen);
+  };
+
+  const onStatusSelect = (
+    event: React.MouseEvent | undefined,
+    itemId: string | number | undefined,
+  ) => {
+    if (typeof itemId === 'undefined') {
+      return;
+    }
+
+    const itemStr = itemId.toString();
+    setSelectedStatuses((prev) =>
+      prev.includes(itemStr) ? prev.filter((s) => s !== itemStr) : [itemStr, ...prev],
+    );
     setCurrentPage(1);
   };
 
@@ -469,41 +528,56 @@ const APIProductsListPage: React.FC = () => {
             <Toolbar>
               <ToolbarContent>
                 <ToolbarGroup variant="filter-group">
-                  <ToolbarItem>
-                    <Select
-                      isOpen={isStatusFilterOpen}
-                      onOpenChange={setIsStatusFilterOpen}
-                      onSelect={handleStatusFilterSelect}
-                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                        <MenuToggle
-                          ref={toggleRef}
-                          onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
-                          isExpanded={isStatusFilterOpen}
-                        >
-                          {statusFilter || t('Status')}
-                        </MenuToggle>
-                      )}
-                    >
-                      <SelectList>
-                        {statusOptions.map((status) => (
-                          <SelectOption
-                            key={status}
-                            value={status}
-                            isSelected={statusFilter === status}
+                  <ToolbarFilter
+                    labels={uniqueSelectedStatuses}
+                    deleteLabel={(_category, label) => onStatusSelect(undefined, label as string)}
+                    deleteLabelGroup={() => setSelectedStatuses([])}
+                    categoryName={t('Status')}
+                  >
+                    <div ref={statusContainerRef}>
+                      <Popper
+                        trigger={
+                          <MenuToggle
+                            ref={statusToggleRef}
+                            onClick={onStatusToggleClick}
+                            isExpanded={isStatusFilterOpen}
+                            icon={<FilterIcon />}
+                            {...(uniqueSelectedStatuses.length > 0 && {
+                              badge: <Badge isRead>{uniqueSelectedStatuses.length}</Badge>,
+                            })}
                           >
-                            {status}
-                          </SelectOption>
-                        ))}
-                      </SelectList>
-                    </Select>
-                  </ToolbarItem>
-                  {statusFilter && (
-                    <ToolbarItem>
-                      <Label color="blue" onClose={clearStatusFilter}>
-                        {t('Status')}: {statusFilter}
-                      </Label>
-                    </ToolbarItem>
-                  )}
+                            {t('Status')}
+                          </MenuToggle>
+                        }
+                        triggerRef={statusToggleRef}
+                        popper={
+                          <Menu
+                            ref={statusMenuRef}
+                            onSelect={onStatusSelect}
+                            selected={uniqueSelectedStatuses}
+                          >
+                            <MenuContent>
+                              <MenuList>
+                                {statusOptions.map((status) => (
+                                  <MenuItem
+                                    key={status}
+                                    hasCheckbox
+                                    isSelected={uniqueSelectedStatuses.includes(status)}
+                                    itemId={status}
+                                  >
+                                    {status}
+                                  </MenuItem>
+                                ))}
+                              </MenuList>
+                            </MenuContent>
+                          </Menu>
+                        }
+                        popperRef={statusMenuRef}
+                        appendTo={statusContainerRef.current || undefined}
+                        isVisible={isStatusFilterOpen}
+                      />
+                    </div>
+                  </ToolbarFilter>
                   <ToolbarItem>
                     <Select
                       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -526,7 +600,6 @@ const APIProductsListPage: React.FC = () => {
                       </SelectList>
                     </Select>
                   </ToolbarItem>
-
                   <ToolbarItem>
                     <InputGroup>
                       <TextInput
@@ -554,7 +627,7 @@ const APIProductsListPage: React.FC = () => {
                 icon={SearchIcon}
               >
                 <EmptyStateBody>
-                  {statusFilter || filters
+                  {selectedStatuses.length > 0 || filters
                     ? t('No API Products match the filter criteria.')
                     : t('There are no API Products to display - please create some.')}
                 </EmptyStateBody>
