@@ -32,7 +32,7 @@ import {
 } from '@patternfly/react-core';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { sortable } from '@patternfly/react-table';
-import { SearchIcon } from '@patternfly/react-icons';
+import { SearchIcon, QuestionCircleIcon } from '@patternfly/react-icons';
 import {
   NamespaceBar,
   TableColumn,
@@ -393,11 +393,35 @@ const APIProductsListPage: React.FC = () => {
         transforms: [sortable],
       } as TableColumn<APIProduct>,
       {
-        title: t('Route'),
+        title: (
+          <>
+            {t('Route')}{' '}
+            <Tooltip
+              content={t(
+                "An HTTPRoute mapping that routes incoming traffic from an API Product's public endpoint to the corresponding upstream service.",
+              )}
+              position="top"
+            >
+              <QuestionCircleIcon />
+            </Tooltip>
+          </>
+        ),
         id: 'route',
       } as TableColumn<APIProduct>,
       {
-        title: t('PlanPolicy'),
+        title: (
+          <>
+            {t('PlanPolicy')}{' '}
+            <Tooltip
+              content={t(
+                'A unified policy that automatically generates and manages underlying Kubernetes Rate Limit and Auth resources to define consumption rules for an API Product.',
+              )}
+              position="top"
+            >
+              <QuestionCircleIcon />
+            </Tooltip>
+          </>
+        ),
         id: 'planpolicy',
       } as TableColumn<APIProduct>,
       {
@@ -413,7 +437,17 @@ const APIProductsListPage: React.FC = () => {
         transforms: [sortable],
       } as TableColumn<APIProduct>,
       {
-        title: t('Tags'),
+        title: (
+          <>
+            {t('Tags')}{' '}
+            <Tooltip
+              content={t('Labels for categorizing and organizing API Products')}
+              position="top"
+            >
+              <QuestionCircleIcon />
+            </Tooltip>
+          </>
+        ),
         id: 'tags',
       } as TableColumn<APIProduct>,
       {
