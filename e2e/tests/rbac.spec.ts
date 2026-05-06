@@ -45,7 +45,7 @@ test.describe('RBAC - test-dev persona', () => {
     await page.waitForLoadState('networkidle');
 
     // verify we were redirected to namespace-scoped URL (uses 'default' as fallback)
-    await expect(page).toHaveURL(/\/kuadrant\/ns\/default\/overview/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/kuadrant\/overview\/ns\/default/, { timeout: 15_000 });
 
     // wait for any RBAC checks to complete
     await waitForPermissionsLoaded(page);
@@ -56,13 +56,13 @@ test.describe('RBAC - test-dev persona', () => {
   test('overview shows resources when accessed via kuadrant-test namespace', async ({ page }) => {
     // navigate directly to their accessible namespace
     await page.evaluate(() => {
-      window.history.pushState({}, '', '/kuadrant/ns/kuadrant-test/overview');
+      window.history.pushState({}, '', '/kuadrant/overview/ns/kuadrant-test');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     await page.waitForLoadState('networkidle');
 
     // should stay on this URL (no redirect since they have permissions)
-    await expect(page).toHaveURL('/kuadrant/ns/kuadrant-test/overview', { timeout: 15_000 });
+    await expect(page).toHaveURL('/kuadrant/overview/ns/kuadrant-test', { timeout: 15_000 });
 
     await waitForPermissionsLoaded(page);
 
@@ -213,7 +213,7 @@ test.describe('RBAC - test-viewer persona', () => {
     await page.waitForLoadState('networkidle');
 
     // verify we were redirected to namespace-scoped URL (uses 'default' as fallback)
-    await expect(page).toHaveURL(/\/kuadrant\/ns\/default\/overview/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/kuadrant\/overview\/ns\/default/, { timeout: 15_000 });
 
     // wait for any RBAC checks to complete
     await waitForPermissionsLoaded(page);
@@ -224,13 +224,13 @@ test.describe('RBAC - test-viewer persona', () => {
   test('overview shows resources when accessed via kuadrant-test namespace', async ({ page }) => {
     // navigate directly to their accessible namespace
     await page.evaluate(() => {
-      window.history.pushState({}, '', '/kuadrant/ns/kuadrant-test/overview');
+      window.history.pushState({}, '', '/kuadrant/overview/ns/kuadrant-test');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     await page.waitForLoadState('networkidle');
 
     // should stay on this URL (no redirect since they have permissions)
-    await expect(page).toHaveURL('/kuadrant/ns/kuadrant-test/overview', { timeout: 15_000 });
+    await expect(page).toHaveURL('/kuadrant/overview/ns/kuadrant-test', { timeout: 15_000 });
 
     await waitForPermissionsLoaded(page);
 
@@ -308,7 +308,7 @@ test.describe('RBAC - test-devops persona', () => {
     await page.waitForLoadState('networkidle');
 
     // verify we were redirected to namespace-scoped URL (uses 'default' as fallback)
-    await expect(page).toHaveURL(/\/kuadrant\/ns\/default\/overview/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/kuadrant\/overview\/ns\/default/, { timeout: 15_000 });
 
     // wait for any RBAC checks to complete
     await waitForPermissionsLoaded(page);
@@ -319,13 +319,13 @@ test.describe('RBAC - test-devops persona', () => {
   test('overview shows resources when accessed via kuadrant-test namespace', async ({ page }) => {
     // navigate directly to their accessible namespace
     await page.evaluate(() => {
-      window.history.pushState({}, '', '/kuadrant/ns/kuadrant-test/overview');
+      window.history.pushState({}, '', '/kuadrant/overview/ns/kuadrant-test');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     await page.waitForLoadState('networkidle');
 
     // should stay on this URL (no redirect since they have permissions)
-    await expect(page).toHaveURL('/kuadrant/ns/kuadrant-test/overview', { timeout: 15_000 });
+    await expect(page).toHaveURL('/kuadrant/overview/ns/kuadrant-test', { timeout: 15_000 });
 
     await waitForPermissionsLoaded(page);
 
