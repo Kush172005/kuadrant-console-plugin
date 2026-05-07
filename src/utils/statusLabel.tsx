@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'react-i18next';
 
 import {
   CheckCircleIcon,
@@ -22,9 +22,7 @@ const generateLabelWithTooltip = (labelText, color, icon, tooltipText) => {
   );
 };
 
-const getStatusLabel = (obj) => {
-  const { t } = useTranslation('plugin__kuadrant-console-plugin');
-
+const getStatusLabel = (t: TFunction, obj) => {
   const tooltipTexts = {
     Enforced: t('The resource is accepted, programmed, and all policies are enforced.'),
     'Accepted (Not Enforced)': t('The resource is accepted but not all policies are enforced.'),
