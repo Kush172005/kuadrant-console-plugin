@@ -71,7 +71,7 @@ const KuadrantTokenRateLimitPolicyCreatePage: React.FC = () => {
         </ModalBody>
         <ModalFooter>
           <Button key="ok" variant={ButtonVariant.link} onClick={() => setIsErrorModalOpen(false)}>
-            OK
+            {t('OK')}
           </Button>
         </ModalFooter>
       </Modal>
