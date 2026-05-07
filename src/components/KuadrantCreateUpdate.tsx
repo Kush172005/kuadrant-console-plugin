@@ -45,7 +45,7 @@ const KuadrantCreateUpdate: React.FC<GenericPolicyForm> = ({
         if (policyType === 'apiproduct') {
           navigate(`/kuadrant/apiproducts/ns/${resource.metadata.namespace}`);
         } else {
-          navigate(`/kuadrant/policies/${policyType}`);
+          navigate(`/kuadrant/policies/ns/${resource.metadata.namespace}/${policyType}`);
         }
       } else {
         await k8sCreate({
@@ -56,7 +56,7 @@ const KuadrantCreateUpdate: React.FC<GenericPolicyForm> = ({
         if (policyType === 'apiproduct') {
           navigate(`/kuadrant/apiproducts/ns/${resource.metadata.namespace}`);
         } else {
-          navigate(`/kuadrant/policies/${policyType}`);
+          navigate(`/kuadrant/policies/ns/${resource.metadata.namespace}/${policyType}`);
         }
       }
     } catch (error: unknown) {

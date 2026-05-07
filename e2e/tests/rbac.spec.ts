@@ -39,7 +39,7 @@ test.describe('RBAC - test-dev persona', () => {
   });
 
   // namespace-scoped users get redirected from /kuadrant/overview to
-  // /kuadrant/ns/default/overview (fallback namespace when activeNamespace is #ALL_NS#).
+  // /kuadrant/overview/ns/default/ (fallback namespace when activeNamespace is #ALL_NS#).
   test('overview redirects to namespace-scoped view (namespace-scoped user)', async ({ page }) => {
     await navigateToOverview(page);
     await page.waitForLoadState('networkidle');
@@ -386,7 +386,7 @@ test.describe('RBAC - test-admin persona', () => {
     await page.waitForLoadState('networkidle');
 
     // verify admin users stay on /kuadrant/overview (cluster-wide view, no redirect)
-    await expect(page).toHaveURL('/kuadrant/overview', { timeout: 15_000 });
+    await expect(page).toHaveURL('/kuadrant/overview/all-namespaces', { timeout: 15_000 });
 
     // wait for any RBAC checks to complete
     await waitForPermissionsLoaded(page);

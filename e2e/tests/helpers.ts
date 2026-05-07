@@ -108,11 +108,11 @@ export async function navigateToPolicies(page: Page): Promise<void> {
 }
 
 export async function navigateToOverview(page: Page): Promise<void> {
-  await spaNavigate(page, '/kuadrant/overview');
+  await spaNavigate(page, '/kuadrant/overview/all-namespaces');
 }
 
 export async function navigateToTopology(page: Page): Promise<void> {
-  await spaNavigate(page, '/kuadrant/policy-topology');
+  await spaNavigate(page, '/kuadrant/policy-topology/all-namespaces');
 }
 
 export async function navigateToAPIProducts(page: Page, namespace?: string): Promise<void> {
@@ -121,7 +121,7 @@ export async function navigateToAPIProducts(page: Page, namespace?: string): Pro
 }
 
 export async function navigateToAPIProductsAllNamespaces(page: Page): Promise<void> {
-  await spaNavigate(page, '/kuadrant/apiproducts/');
+  await spaNavigate(page, '/kuadrant/apiproducts/all-namespaces');
 }
 
 // wait for RBAC permission checks to finish loading.

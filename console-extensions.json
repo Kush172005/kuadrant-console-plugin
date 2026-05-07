@@ -150,7 +150,7 @@
     "type": "console.page/route",
     "properties": {
       "exact": true,
-      "path": "/kuadrant/overview",
+      "path": "/kuadrant/overview/all-namespaces",
       "component": { "$codeRef": "KuadrantOverviewPage" }
     }
   },
@@ -166,7 +166,7 @@
     "type": "console.page/route",
     "properties": {
       "exact": false,
-      "path": "/kuadrant/policies",
+      "path": "/kuadrant/policies/all-namespaces",
       "component": { "$codeRef": "KuadrantPoliciesPage" }
     }
   },
@@ -180,7 +180,7 @@
   {
     "type": "console.page/route",
     "properties": {
-      "path": "/kuadrant/policy-topology",
+      "path": "/kuadrant/policy-topology/all-namespaces",
       "component": { "$codeRef": "PolicyTopologyPage" }
     }
   },
@@ -210,7 +210,7 @@
   {
     "type": "console.page/route",
     "properties": {
-      "path": "/kuadrant/apiproducts",
+      "path": "/kuadrant/apiproducts/all-namespaces",
       "component": { "$codeRef": "APIProductsListPage" }
     }
   },

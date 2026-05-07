@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useTranslation } from 'react-i18next';
 import { sortable } from '@patternfly/react-table';
 import {
@@ -341,31 +341,7 @@ const TLSPolicyTab: React.FC = () => {
 
 const KuadrantPoliciesPage: React.FC = () => {
   const { t } = useTranslation('plugin__kuadrant-console-plugin');
-  const location = useLocation();
-
-  // Extract current tab from URL to preserve it when changing namespaces
-  const getCurrentTab = React.useCallback(() => {
-    const pathParts = location.pathname.split('/').filter(Boolean);
-    const policiesIndex = pathParts.indexOf('policies');
-
-    if (policiesIndex !== -1 && pathParts.length > policiesIndex + 1) {
-      const nextSegment = pathParts[policiesIndex + 1];
-      // If next segment is not 'ns', it's a tab
-      if (nextSegment !== 'ns') {
-        return `/${nextSegment}`;
-      } else if (pathParts.length > policiesIndex + 3) {
-        // It's /kuadrant/policies/ns/namespace/tab pattern
-        return `/${pathParts[policiesIndex + 3]}`;
-      }
-    }
-
-    return '';
-  }, [location.pathname]);
-
-  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange(
-    '/policies',
-    getCurrentTab,
-  );
+  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/policies');
   const [activePerspective] = useActivePerspective();
 
   const defaultColumns: TableColumn<K8sResourceCommon>[] = [
