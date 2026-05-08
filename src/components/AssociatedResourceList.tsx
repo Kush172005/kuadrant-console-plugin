@@ -123,7 +123,7 @@ const AssociatedResourceList: React.FC<AssociatedResourceListProps> = ({ resourc
             case 'status':
               return (
                 <TableData key={column.id} id={column.id} activeColumnIDs={activeColumnIDs}>
-                  {getStatusLabel(obj)}
+                  {getStatusLabel(t, obj)}
                 </TableData>
               );
             default:

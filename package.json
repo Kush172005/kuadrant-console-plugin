@@ -97,6 +97,7 @@
       "HTTPRoutePoliciesPage": "./components/HTTPRoutePoliciesPage",
       "GRPCRoutePoliciesPage": "./components/GRPCRoutePoliciesPage",
       "GatewayPoliciesPage": "./components/GatewayPoliciesPage",
+      "PolicyTargetRefPage": "./components/PolicyTargetRefPage",
       "APIProductCreatePage": "./components/apiproduct/APIProductCreatePage",
       "APIProductsListPage": "./components/apiproduct/APIProductsListPage",
       "APIProductPoliciesTab": "./components/apiproduct/APIProductPoliciesTab",

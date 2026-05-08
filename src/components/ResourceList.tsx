@@ -300,7 +300,7 @@ const ResourceList: React.FC<ResourceListProps> = ({
               case 'Status':
                 return (
                   <TableData key={column.id} id={column.id} activeColumnIDs={activeColumnIDs}>
-                    {getStatusLabel(obj)}
+                    {getStatusLabel(t, obj)}
                   </TableData>
                 );
               case 'Created':

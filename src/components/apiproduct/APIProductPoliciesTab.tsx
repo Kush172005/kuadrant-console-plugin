@@ -189,7 +189,7 @@ const APIProductPoliciesTab: React.FC = () => {
           {obj.kind}
         </TableData>
         <TableData id="status" activeColumnIDs={activeColumnIDs}>
-          {getStatusLabel(obj)}
+          {getStatusLabel(t, obj)}
         </TableData>
       </>
     );
