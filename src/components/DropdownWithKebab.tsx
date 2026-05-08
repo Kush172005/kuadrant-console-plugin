@@ -38,7 +38,6 @@ const DropdownWithKebab: React.FC<DropdownWithKebabProps> = ({ obj }) => {
   const onDeleteConfirm = async () => {
     try {
       await k8sDelete({ model, resource: obj });
-      console.log('Successfully deleted', obj.metadata.name);
     } catch (error) {
       console.error('Failed to delete', obj.metadata.name, error);
     } finally {
