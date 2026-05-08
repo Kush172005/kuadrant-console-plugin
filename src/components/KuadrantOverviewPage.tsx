@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom-v5-compat';
+import { useNavigate, useLocation, useParams } from 'react-router-dom-v5-compat';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import {
@@ -47,7 +47,6 @@ import {
   QuestionCircleIcon,
 } from '@patternfly/react-icons';
 import {
-  useActiveNamespace,
   usePrometheusPoll,
   PrometheusEndpoint,
   K8sResourceCommon,
@@ -66,6 +65,7 @@ import { RESOURCES, resourceGVKMapping } from '../utils/resources';
 import useAccessReviews from '../utils/resourceRBAC';
 import { getResourceNameFromKind } from '../utils/getModelFromResource';
 import { KuadrantStatusAlert } from './KuadrantStatusAlert';
+import { useKuadrantNamespaceChange } from '../hooks/useKuadrantNamespaceChange';
 import {
   buildTotalRequestsQuery,
   buildErrorRequestQuery,
@@ -128,7 +128,7 @@ const KuadrantOverviewPage: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation('plugin__kuadrant-console-plugin');
   const { ns } = useParams<{ ns: string }>();
-  const [activeNamespace, setActiveNamespace] = useActiveNamespace();
+  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/overview');
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isOpen, setIsOpen] = React.useState(false);
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
@@ -155,7 +155,7 @@ const KuadrantOverviewPage: React.FC = () => {
   // Smart default redirect: check cluster-wide permissions and redirect namespace-scoped users
   React.useEffect(() => {
     const performRedirect = async () => {
-      if (location.pathname === '/kuadrant/overview') {
+      if (location.pathname === '/kuadrant/overview/all-namespaces') {
         try {
           const result = await checkAccess({
             group: 'gateway.networking.k8s.io',
@@ -167,14 +167,14 @@ const KuadrantOverviewPage: React.FC = () => {
           if (!result.status?.allowed) {
             const targetNamespace =
               activeNamespace && activeNamespace !== '#ALL_NS#' ? activeNamespace : 'default';
-            navigate(`/kuadrant/ns/${targetNamespace}/overview`, { replace: true });
+            navigate(`/kuadrant/overview/ns/${targetNamespace}`, { replace: true });
           }
-          // Otherwise, stay on /kuadrant/overview (cluster-wide view)
+          // Otherwise, stay on current path (cluster-wide view)
         } catch (error) {
           // On error, redirect to namespace-scoped view
           const targetNamespace =
             activeNamespace && activeNamespace !== '#ALL_NS#' ? activeNamespace : 'default';
-          navigate(`/kuadrant/ns/${targetNamespace}/overview`, { replace: true });
+          navigate(`/kuadrant/overview/ns/${targetNamespace}`, { replace: true });
         }
       }
     };
@@ -233,9 +233,9 @@ const KuadrantOverviewPage: React.FC = () => {
 
   React.useEffect(() => {
     if (ns && ns !== activeNamespace) {
-      setActiveNamespace(ns);
+      handleNamespaceChange(ns);
     }
-  }, [ns, setActiveNamespace]);
+  }, [ns, handleNamespaceChange]);
 
   const handleHideCard = () => {
     setHideCard(true);
@@ -458,14 +458,6 @@ const KuadrantOverviewPage: React.FC = () => {
     const resolvedNamespace = watchNamespace === '#ALL_NS#' ? 'default' : watchNamespace;
     const gvk = resourceGVKMapping[resource];
     navigate(`/k8s/ns/${resolvedNamespace}/${gvk.group}~${gvk.version}~${gvk.kind}/~new`);
-  };
-
-  const handleNamespaceChange = (newNamespace: string) => {
-    if (newNamespace !== '#ALL_NS#') {
-      navigate(`/kuadrant/ns/${newNamespace}/overview`, { replace: true });
-    } else {
-      navigate('/kuadrant/overview', { replace: true });
-    }
   };
 
   const onMenuSelect = (_event: React.MouseEvent<Element, MouseEvent>, policyType: string) => {

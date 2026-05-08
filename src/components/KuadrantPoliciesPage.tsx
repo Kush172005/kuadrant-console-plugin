@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useTranslation } from 'react-i18next';
 import { sortable } from '@patternfly/react-table';
 import {
@@ -8,7 +8,6 @@ import {
   HorizontalNav,
   TableColumn,
   K8sResourceCommon,
-  useActiveNamespace,
   useActivePerspective,
   ListPageCreateLink,
   ListPageBody,
@@ -27,6 +26,7 @@ import './kuadrant.css';
 import { RESOURCES, getPolicyKinds, resourceGVKMapping } from '../utils/resources';
 import NoPermissionsView from './NoPermissionsView';
 import { getResourceNameFromKind } from '../utils/getModelFromResource';
+import { useKuadrantNamespaceChange } from '../hooks/useKuadrantNamespaceChange';
 
 interface Resource {
   name: string;
@@ -341,16 +341,8 @@ const TLSPolicyTab: React.FC = () => {
 
 const KuadrantPoliciesPage: React.FC = () => {
   const { t } = useTranslation('plugin__kuadrant-console-plugin');
-  const { ns } = useParams<{ ns: string }>();
-  const [activeNamespace, setActiveNamespace] = useActiveNamespace();
+  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/policies');
   const [activePerspective] = useActivePerspective();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (ns && ns !== activeNamespace) {
-      setActiveNamespace(ns);
-    }
-  }, [ns, activeNamespace, setActiveNamespace]);
 
   const defaultColumns: TableColumn<K8sResourceCommon>[] = [
     {
@@ -461,22 +453,6 @@ const KuadrantPoliciesPage: React.FC = () => {
       component: PlanPolicyTab,
     },
   ];
-
-  const handleNamespaceChange = (activeNamespace: string) => {
-    let currentTab = '';
-    let activeTab = location.pathname.split('/').pop();
-    if (activeTab === 'policies') {
-      activeTab = '';
-    }
-
-    if (activeNamespace !== '#ALL_NS#') {
-      currentTab = `/kuadrant/ns/${activeNamespace}/policies/${activeTab}`;
-    } else {
-      currentTab = `/kuadrant/all-namespaces/policies/${activeTab}`;
-    }
-
-    navigate(currentTab, { replace: true });
-  };
 
   const contextValue = {
     activeNamespace,

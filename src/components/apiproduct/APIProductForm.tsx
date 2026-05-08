@@ -501,7 +501,7 @@ const APIProductForm: React.FC<APIProductFormProps> = ({
             })()}
             <Button
               variant="link"
-              onClick={() => navigate(`/kuadrant/ns/${namespace}/apiproducts`)}
+              onClick={() => navigate(`/kuadrant/apiproducts/ns/${namespace}`)}
             >
               {t('Cancel')}
             </Button>

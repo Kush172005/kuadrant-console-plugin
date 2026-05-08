@@ -27,7 +27,7 @@ import {
 import { sortable } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons';
 import {
-  useActiveNamespace,
+  NamespaceBar,
   TableColumn,
   ResourceLink,
   TableData,
@@ -44,10 +44,11 @@ import { APIProduct, PlanPolicy } from './types';
 import DropdownWithKebab from '../DropdownWithKebab';
 import '../kuadrant.css';
 import { getResourceNameFromKind } from '../../utils/getModelFromResource';
+import { useKuadrantNamespaceChange } from '../../hooks/useKuadrantNamespaceChange';
 
 const APIProductsListPage: React.FC = () => {
   const { t } = useTranslation('plugin__kuadrant-console-plugin');
-  const [activeNamespace] = useActiveNamespace();
+  const { handleNamespaceChange, activeNamespace } = useKuadrantNamespaceChange('/apiproducts');
   const allNamespacesSubPath = '#ALL_NS#';
   const isAllNamespaces = activeNamespace === allNamespacesSubPath;
 
@@ -444,6 +445,7 @@ const APIProductsListPage: React.FC = () => {
 
   return (
     <>
+      <NamespaceBar onNamespaceChange={handleNamespaceChange} />
       <PageSection hasBodyWrapper={false}>
         <Title headingLevel="h1">{t('API Products')}</Title>
       </PageSection>
@@ -590,7 +592,7 @@ const APIProductsListPage: React.FC = () => {
           </ListPageBody>
           <div className="kuadrant-resource-create-button pf-u-mt-md">
             {!canCreateLoading && canCreate && !isAllNamespaces ? (
-              <ListPageCreateLink to={`/kuadrant/ns/${activeNamespace}/apiproducts/~new`}>
+              <ListPageCreateLink to={`/kuadrant/apiproducts/ns/${activeNamespace}/~new`}>
                 {t('Create API Product')}
               </ListPageCreateLink>
             ) : (

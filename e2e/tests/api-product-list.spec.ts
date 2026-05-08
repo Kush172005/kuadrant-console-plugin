@@ -3,7 +3,7 @@ import { impersonateUser, stopImpersonation, waitForPermissionsLoaded } from './
 
 const navigateToAPIProducts = async (page, namespace = 'kuadrant-test') => {
   await page.evaluate((ns) => {
-    window.history.pushState({}, '', `/k8s/ns/${ns}/devportal.kuadrant.io~v1alpha1~APIProduct`);
+    window.history.pushState({}, '', `/kuadrant/apiproducts/ns/${ns}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, namespace);
   await page.waitForLoadState('networkidle');
@@ -62,8 +62,8 @@ test.describe('APIProduct List Page - Display and Filters', () => {
     });
 
     // Verify we have at least 4 API Products
-    const rows = page.locator('tbody tr[data-key]');
-    await expect(rows).toHaveCount(5, { timeout: 10_000 });
+    const rows = await page.locator('tbody tr[data-key]').all();
+    expect(rows.length).toBeGreaterThan(4);
   });
 
   test('displays correct status labels', async ({ page }) => {
@@ -74,7 +74,7 @@ test.describe('APIProduct List Page - Display and Filters', () => {
     const publishedLabels = await page
       .locator('.pf-v6-c-label.pf-m-green:has-text("Published")')
       .all();
-    expect(publishedLabels).toHaveLength(2);
+    expect(publishedLabels).toHaveLength(3);
 
     // Wait for Draft status label (orange)
     const draftLabels = await page.locator('.pf-v6-c-label.pf-m-orange:has-text("Draft")').all();

@@ -104,24 +104,24 @@ async function spaNavigate(page: Page, path: string): Promise<void> {
 }
 
 export async function navigateToPolicies(page: Page): Promise<void> {
-  await spaNavigate(page, `/kuadrant/ns/${TEST_NAMESPACE}/policies`);
+  await spaNavigate(page, `/kuadrant/policies/ns/${TEST_NAMESPACE}`);
 }
 
 export async function navigateToOverview(page: Page): Promise<void> {
-  await spaNavigate(page, '/kuadrant/overview');
+  await spaNavigate(page, '/kuadrant/overview/all-namespaces');
 }
 
 export async function navigateToTopology(page: Page): Promise<void> {
-  await spaNavigate(page, '/kuadrant/policy-topology');
+  await spaNavigate(page, '/kuadrant/policy-topology/all-namespaces');
 }
 
 export async function navigateToAPIProducts(page: Page, namespace?: string): Promise<void> {
   const ns = namespace || TEST_NAMESPACE;
-  await spaNavigate(page, `/k8s/ns/${ns}/devportal.kuadrant.io~v1alpha1~APIProduct`);
+  await spaNavigate(page, `/kuadrant/apiproducts/ns/${ns}`);
 }
 
 export async function navigateToAPIProductsAllNamespaces(page: Page): Promise<void> {
-  await spaNavigate(page, '/k8s/all-namespaces/devportal.kuadrant.io~v1alpha1~APIProduct');
+  await spaNavigate(page, '/kuadrant/apiproducts/all-namespaces');
 }
 
 // wait for RBAC permission checks to finish loading.

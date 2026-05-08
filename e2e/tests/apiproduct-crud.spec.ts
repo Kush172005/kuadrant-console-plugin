@@ -12,7 +12,7 @@ async function spaNavigate(page: Page, path: string): Promise<void> {
 
 async function navigateToAPIProductCreate(page: Page, namespace = 'kuadrant-test'): Promise<void> {
   await page.evaluate((ns) => {
-    window.history.pushState({}, '', `/kuadrant/ns/${ns}/apiproducts/~new`); //TODO: Update routing to k8s obj
+    window.history.pushState({}, '', `/kuadrant/apiproducts/ns/${ns}/~new`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, namespace);
   await page.waitForLoadState('networkidle');
@@ -20,7 +20,7 @@ async function navigateToAPIProductCreate(page: Page, namespace = 'kuadrant-test
 
 const navigateToAPIProducts = async (page: Page, namespace = 'kuadrant-test') => {
   await page.evaluate((ns) => {
-    window.history.pushState({}, '', `/k8s/ns/${ns}/devportal.kuadrant.io~v1alpha1~APIProduct`);
+    window.history.pushState({}, '', `/kuadrant/apiproducts/ns/${ns}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }, namespace);
   await page.waitForLoadState('networkidle');
@@ -56,7 +56,7 @@ test.describe('APIProduct CRUD Operations', () => {
     await createButton.click();
 
     // Verify we landed on the create page
-    await expect(page).toHaveURL(new RegExp(`/kuadrant/ns/${TEST_NAMESPACE}/apiproducts/~new`));
+    await expect(page).toHaveURL(new RegExp(`/kuadrant/apiproducts/ns/${TEST_NAMESPACE}/~new`));
     await expect(page.locator('text=Create API Product')).toBeVisible({ timeout: 15000 });
 
     // Verify form is loaded by checking for key form elements
@@ -368,7 +368,7 @@ test.describe('APIProduct CRUD Operations', () => {
 
     // Placeholder: navigate to edit page for a test APIProduct
     const testProductName = 'test-edit-product';
-    await spaNavigate(page, `/kuadrant/ns/${TEST_NAMESPACE}/apiproducts/${testProductName}/edit`);
+    await spaNavigate(page, `/kuadrant/apiproducts/ns/${TEST_NAMESPACE}/${testProductName}/edit`);
     await page.waitForLoadState('networkidle');
 
     // Skip test if APIProduct doesn't exist (check for edit header)
