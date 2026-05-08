@@ -670,6 +670,7 @@ const APIProductsListPage: React.FC = () => {
                         trigger={
                           <MenuToggle
                             ref={statusToggleRef}
+                            id="status-filter-menu-toggle"
                             onClick={onStatusToggleClick}
                             isExpanded={isStatusFilterOpen}
                             icon={<FilterIcon />}
@@ -688,7 +689,7 @@ const APIProductsListPage: React.FC = () => {
                             selected={uniqueSelectedStatuses}
                           >
                             <MenuContent>
-                              <MenuList>
+                              <MenuList id="status-filter-select-list">
                                 {statusOptions.map((status) => (
                                   <MenuItem
                                     key={status}
@@ -756,6 +757,7 @@ const APIProductsListPage: React.FC = () => {
                       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                         <MenuToggle
                           ref={toggleRef}
+                          id="composite-filter-menu-toggle"
                           onClick={onToggleClick}
                           isExpanded={isFilterOpen}
                           style={{ minWidth: '150px' }}
@@ -767,10 +769,22 @@ const APIProductsListPage: React.FC = () => {
                       onOpenChange={setIsFilterOpen}
                       isOpen={isFilterOpen}
                     >
-                      <SelectList>
-                        <SelectOption value="name">{t('Name')}</SelectOption>
-                        <SelectOption value="namespace">{t('Namespace')}</SelectOption>
-                        <SelectOption value="httproute">{t('HTTPRoute')}</SelectOption>
+                      <SelectList id="composite-filter-select-list">
+                        <SelectOption id="composite-filter-select-option-name" value="name">
+                          {t('Name')}
+                        </SelectOption>
+                        <SelectOption
+                          id="composite-filter-select-option-namespace"
+                          value="namespace"
+                        >
+                          {t('Namespace')}
+                        </SelectOption>
+                        <SelectOption
+                          id="composite-filter-select-option-httproute"
+                          value="httproute"
+                        >
+                          {t('HTTPRoute')}
+                        </SelectOption>
                       </SelectList>
                     </Select>
                     {filterSelected === 'httproute' ? (
@@ -819,6 +833,7 @@ const APIProductsListPage: React.FC = () => {
                     ) : (
                       <TextInput
                         type="text"
+                        id="composite-filter-search-by-input"
                         placeholder={t('Search by {{filterValue}}...', {
                           filterValue: filterLabels[filterSelected],
                         })}
